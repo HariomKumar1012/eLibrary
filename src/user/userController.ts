@@ -4,6 +4,7 @@ import userModel from "./userModel";
 import bcrypt from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
+import { User } from "./userTypes";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password } = req.body;
@@ -14,38 +15,51 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
         return next(error);
     }
 
-    //Database call: Check kariye ki user already database me exist karta hai ya nahi
-    const user = await userModel.findOne({ email: email });
+    try {
+        //Database call: Check kariye ki user already database me exist karta hai ya nahi
+        const user = await userModel.findOne({ email: email });
 
-    //Agar user already database me exist karta hai to user ko register mat kariye
-    if (user) {
-        const error = createHttpError(
-            400,
-            "User already exist with this email"
-        );
-        return next(error);
+        //Agar user already database me exist karta hai to user ko register mat kariye
+        if (user) {
+            const error = createHttpError(
+                400,
+                "User already exist with this email"
+            );
+            return next(error);
+        }
+    } catch (err) {
+        return next(createHttpError(500, "Error while getting the user"));
     }
 
     //agar user new hai to use register karna hoga
     //User ko database me register karne ke liye sabse pehle uska password ko hash kariye
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await userModel.create({
-        name,
-        email,
-        password: hashedPassword,
-    });
+    let newUser: User;
+
+    try {
+        newUser = await userModel.create({
+            name,
+            email,
+            password: hashedPassword,
+        });
+    } catch (err) {
+        return next(createHttpError(500, "Error while creating the user"));
+    }
 
     //JWT token generation
     //sub me hum user ki id daalenge which is going to used as a payload in the signature
-    const token = sign({ sub: newUser._id }, config.jwtSecret as string, {
-        expiresIn: "7d",
-    });
+    try {
+        const token = sign({ sub: newUser._id }, config.jwtSecret as string, {
+            expiresIn: "7d",
+        });
 
-    //response
-    return res.json({
-        accessToken: token,
-    });
+        return res.json({
+            accessToken: token,
+        });
+    } catch (err) {
+        return next(createHttpError(500, "Error while signing jwt token"));
+    }
 };
 
 export { createUser };
