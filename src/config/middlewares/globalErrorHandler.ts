@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { HttpError } from "http-errors";
 import { config } from "../config";
 
-const globleErrorHandler = (
+const globalErrorHandler = (
     err: HttpError,
     req: Request,
     res: Response,
@@ -16,4 +16,4 @@ const globleErrorHandler = (
     });
 };
 
-export default globleErrorHandler;
+export default globalErrorHandler;
