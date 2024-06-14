@@ -54,7 +54,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
             expiresIn: "7d",
         });
 
-        return res.json({
+        return res.status(201).json({
             accessToken: token,
         });
     } catch (err) {
@@ -62,4 +62,44 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export { createUser };
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+
+    //Validation
+    if (!email || !password) {
+        return next(createHttpError(400, "All fields are required"));
+    }
+
+    //check if user is registered or not
+    let user;
+    try {
+        user = await userModel.findOne({ email: email });
+        if (!user) {
+            const error = createHttpError(404, "User not found");
+            return next(error);
+        }
+    } catch (err) {
+        return next(createHttpError(404, "Error while finding the user"));
+    }
+
+    //user mil gaya hai to check kariye ki password sahi enter kara hai ya nahi
+    const isMatch = await bcrypt.compare(password, user.password as string);
+
+    if (!isMatch) {
+        return next(createHttpError(400, "Username or password incorrect"));
+    }
+
+    try {
+        const token = sign({ sub: user._id }, config.jwtSecret as string, {
+            expiresIn: "7d",
+        });
+
+        return res.status(201).json({
+            accessToken: token,
+        });
+    } catch (err) {
+        return next(createHttpError(500, "Error while signing jwt token"));
+    }
+};
+
+export { createUser, loginUser };
