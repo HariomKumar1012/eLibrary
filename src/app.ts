@@ -1,9 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
 import { HttpError } from "http-errors";
 import { config } from "./config/config";
-import globalErrorHandler from "./config/middlewares/globalErrorHandler";
 import userRouter from "./user/userRouter";
 import bookRouter from "./book/bookRouter";
+import globalErrorHandler from "./middlewares/globalErrorHandler";
 
 const app = express();
 app.use(express.json());
