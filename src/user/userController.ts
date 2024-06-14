@@ -89,6 +89,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
         return next(createHttpError(400, "Username or password incorrect"));
     }
 
+    //agar password sahi hai to token generate karaw lo
     try {
         const token = sign({ sub: user._id }, config.jwtSecret as string, {
             expiresIn: "7d",
