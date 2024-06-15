@@ -9,6 +9,7 @@ const _config = {
     cloudinaryName: process.env.CLOUDINARY_NAME,
     cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
     cloudinarySecret: process.env.CLOUDINARY_API_SECRET,
+    frontendDomain: process.env.FRONTEND_DOMAIN,
 };
 
 export const config = Object.freeze(_config); //Object.freeze make the _config read only
